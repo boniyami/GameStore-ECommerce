@@ -1,0 +1,40 @@
+<%- include('partials/header') %>
+
+<div class="full-page-container">
+    <div class="log-container">
+        <h2>📊 Historical Sales Journal Archive</h2>
+        
+        <% if (sales.length === 0) { %>
+            <p style="text-align: center; color: #718096; padding: 40px 0;">No sales transactions have been executed yet.</p>
+        <% } else { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Receipt Code</th>
+                        <th>Image</th>
+                        <th>Product Item</th>
+                        <th>Unit Cost</th>
+                        <th>Qty</th>
+                        <th>Total Earned</th>
+                        <th>Timestamp Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% sales.forEach(sale => { %>
+                        <tr>
+                            <td><span class="badge"><%= sale.saleId.substring(0, 13) %>...</span></td>
+                            <td><img src="<%= sale.imagePath %>" class="img-thumb"></td>
+                            <td><strong><%= sale.productName %></strong></td>
+                            <td>$<%= sale.price.toFixed(2) %></td>
+                            <td>x<%= sale.quantity %></td>
+                            <td style="font-weight: bold; color: rgb(5, 226, 5);">$<%= sale.totalAmount.toFixed(2) %></td>
+                            <td><small style="color: #a0cbe8;"><%= new Date(sale.saleDate).toLocaleString() %></small></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

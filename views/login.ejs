@@ -1,0 +1,41 @@
+<%- include('partials/header') %>
+
+<div style="display: flex; align-items: center; justify-content: center; min-height: 70vh; font-family: system-ui, -apple-system, sans-serif;">
+    <div style="background: #00aaff0f; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05); max-width: 400px; width: 100%; border: 1px solid #e2e8f0;">
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">🎮</div>
+            <h2 style="margin: 0; color: #ffffff; font-size: 1.6rem; font-weight: 700;">Welcome to GAMEArea</h2>
+            <p style="color: #92e5ff; margin-top: 6px; font-size: 0.95rem;">Log in to access your Game and Gear.</p>
+        </div>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div style="background: #fff5f5; border: 1px solid #fed7d7; color: #c53030; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; font-weight: 500;">
+                <%= error %>
+            </div>
+        <% } %>
+
+        <form action="/login" method="POST">
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #6db1c4; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Username / E-mail</label>
+                <input type="text" name="username" placeholder="e.g., gamer_dude99" required style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#d37100'">
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #6db1c4; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Password</label>
+                <input type="password" name="password" placeholder="••••••" required style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#d37100'">
+            </div>
+
+            <button type="submit" style="background: linear-gradient(135deg, #0022ff 0%, #0195c2 100%); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; font-size: 1rem; width: 100%; cursor: pointer; box-shadow: 0 4px 12px rgba(211, 113, 0, 0.25); transition: opacity 0.2s;">
+                Log In
+            </button>
+        </form>
+
+        <div style="text-align: center; font-size: 0.9rem; margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+            <span style="color: #6db1c4;">Don't have an account?</span> 
+            <a href="/register" style="color: #00e1ff; text-decoration: none; font-weight: bold;">Sign Up Here</a>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

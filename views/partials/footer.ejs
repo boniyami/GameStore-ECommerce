@@ -1,0 +1,169 @@
+<footer class="main-footer">
+    <div class="primary_footer">
+        <p>
+          <strong class="footertitle">Made By</strong><br /><br>
+          <b >Boni Yamin</b><br />
+          Trainee ID: 1295290<br>
+          Batch ID: CS/SCSL-A/70/01<br />
+          IsDB-BISEW IT Scholarship Programme<br />
+          Email: boni.yamin.79@gmail.com<br />
+          Phone: +8801781328700
+        </p>
+        <p>
+          <strong class="footertitle">Submitted To</strong><br /><br>
+          <b >Zahidul Hassan</b><br>
+          Project Consultant<br />
+          Consultant at Show & Tell Consulting Ltd<br />
+          IsDB-BISEW IT Scholarship Programme<br />
+          Email: jewelmir81@gmail.com<br />
+          Phone: +8801535110014
+        </p>
+       
+    </div>
+    &copy; 2026 E-Commerce WebApp Architecture Engine &bull; All Rights Reserved.
+</footer>
+
+<div id="chat-toggle-btn" onclick="toggleChatDesk()" style="position: fixed; bottom: 15px; right: 15px; background: linear-gradient(200deg,  #03015f 0%, #00e1ff 100%); color: white; padding: 10px 18px; border-radius: 50px; cursor: pointer; font-weight: 600; box-shadow: 0 6px 16px rgba(26, 54, 93, 0.25); z-index: 1000; display: flex; align-items: center; gap: 8px; font-family: system-ui, -apple-system, sans-serif; border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.2s ease;">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span style="font-size: 0.85rem; letter-spacing: 0.2px;">Hub Chat</span> 
+    <span id="chat-badge" style="background: #0099ff; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 0.65rem; display: none; align-items: center; justify-content: center; font-weight: 700; border: 1px solid #ffffff;">0</span>
+</div>
+
+<div id="chat-window-desk" style="position: fixed; bottom: 65px; right: 15px; width: 280px; height: 350px; background: #ffffff; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); display: none; flex-direction: column; z-index: 1000; border: 1px solid #e2e8f0; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; text-align: left;">
+    
+    <div style="background: linear-gradient(90deg, #1a202c 0%, #2d3748 100%); color: white; padding: 10px 14px; font-weight: 600; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+        <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="width: 6px; height: 6px; background: #48bb78; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px #48bb78;"></span>
+            <span style="letter-spacing: 0.3px; color: #f7fafc;">Terminal Chat</span>
+        </div>
+        <button onclick="toggleChatDesk()" style="background: transparent; color: #a0aec0; border: none; font-size: 1.3rem; cursor: pointer; line-height: 1; padding: 0;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#a0aec0'">&times;</button>
+    </div>
+    
+    <div id="identity-box" style="padding: 8px 12px; background: #f7fafc; border-bottom: 1px solid #edf2f7; display: flex; gap: 6px;">
+        <input type="text" id="chat-username" placeholder="Nickname Signature" style="flex: 1; padding: 6px 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.8rem; outline: none; background: #ffffff;" onfocus="this.style.borderColor='#3182ce'">
+        <button onclick="lockIdentityProfile()" id="lock-identity-btn" style="background: #4a5568; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Set</button>
+    </div>
+
+    <div id="chat-messages-stream" style="flex: 1; padding: 12px; overflow-y: auto; background: #edf2f7; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth;">
+        <p id="chat-welcome-placeholder" style="color: #718096; font-size: 0.75rem; text-align: center; margin: auto auto 0 auto; background: rgba(255, 255, 255, 0.9); padding: 6px 10px; border-radius: 12px; border: 1px solid #e2e8f0; width: 85%; box-sizing: border-box;">Welcome to the sync terminal.</p>
+    </div>
+
+    <div style="padding: 8px 12px; border-top: 1px solid #edf2f7; background: #ffffff; display: flex; gap: 6px;">
+        <input type="text" id="chat-input-field" placeholder="Type..." style="flex: 1; padding: 8px 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.85rem; outline: none;" onkeypress="handleChatEnterKey(event)" disabled onfocus="this.style.borderColor='#3182ce'">
+        <button onclick="dispatchLiveMessage()" style="background: #005295; color: white; border: none; padding: 0 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem;">
+            <span>Send</span>
+        </button>
+    </div>
+</div>
+
+<script>
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const socket = new WebSocket(wsProtocol + window.location.host);
+
+    let unreadCount = 0;
+    let clientIdentity = localStorage.getItem('pos_chat_name') || '';
+
+    // Handle user profile extraction out of persistent browser storage
+    if (clientIdentity) {
+        document.getElementById('chat-username').value = clientIdentity;
+        document.getElementById('chat-username').disabled = true;
+        document.getElementById('lock-identity-btn').innerText = "Edit";
+        document.getElementById('chat-input-field').disabled = false;
+    }
+
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        
+        // 1. Live Catalog Sync Reload Signal Handler
+        if (data.type === 'REFRESH_DATA') {
+            console.log('Central Database Mutation Registered. Re-rendering UI elements cleanly...');
+            window.location.reload(); 
+        }
+
+        // 2. Real-Time Chat Processing Handler
+        if (data.type === 'CHAT_MSG') {
+            appendIncomingMessageBubble(data);
+        }
+    };
+
+    function toggleChatDesk() {
+        const chatBox = document.getElementById('chat-window-desk');
+        if (chatBox.style.display === 'none' || chatBox.style.display === '') {
+            chatBox.style.display = 'flex';
+            unreadCount = 0;
+            document.getElementById('chat-badge').style.display = 'none';
+            scrollChatToBottom();
+        } else {
+            chatBox.style.display = 'none';
+        }
+    }
+
+    function lockIdentityProfile() {
+        const input = document.getElementById('chat-username');
+        const btn = document.getElementById('lock-identity-btn');
+        const messageField = document.getElementById('chat-input-field');
+
+        if (input.disabled) {
+            input.disabled = false;
+            messageField.disabled = true;
+            btn.innerText = "Set";
+        } else {
+            const name = input.value.trim();
+            if (!name) return alert("Please specify an identity signature label.");
+            
+            clientIdentity = name;
+            localStorage.setItem('pos_chat_name', name);
+            input.disabled = true;
+            messageField.disabled = false;
+            btn.innerText = "Edit";
+        }
+    }
+    function dispatchLiveMessage() {
+        const inputField = document.getElementById('chat-input-field');
+        const msg = inputField.value.trim();
+        if (!msg || !clientIdentity) return;
+
+        const payload = {
+            type: 'CHAT_MSG',
+            sender: clientIdentity,
+            message: msg
+        };
+        socket.send(JSON.stringify(payload));
+        inputField.value = '';
+    }
+    function handleChatEnterKey(event) {
+        if (event.key === 'Enter') {
+            dispatchLiveMessage();
+        }
+    }
+   function appendIncomingMessageBubble(data) {
+    const stream = document.getElementById('chat-messages-stream');
+    const isMe = data.sender === clientIdentity;
+
+    const bubbleWrapper = document.createElement('div');
+    bubbleWrapper.style.display = 'flex';
+    bubbleWrapper.style.flexDirection = 'column';
+    bubbleWrapper.style.alignItems = isMe ? 'flex-end' : 'flex-start';   
+    bubbleWrapper.innerHTML = 
+        '<span style="font-size: 0.7rem; color: #718096; margin: 0 4px 2px 4px;">' + data.sender + ' &bull; ' + data.timestamp + '</span>' +
+        '<div style="background: ' + (isMe ? '#3182ce' : '#e2e8f0') + '; color: ' + (isMe ? 'white' : '#2d3748') + '; padding: 8px 12px; border-radius: 12px; max-width: 80%; font-size: 0.85rem; word-break: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">' +
+            data.message +
+        '</div>';
+
+    stream.appendChild(bubbleWrapper);
+    scrollChatToBottom();    
+    if (document.getElementById('chat-window-desk').style.display === 'none') {
+        unreadCount++;
+        const badge = document.getElementById('chat-badge');
+        badge.innerText = unreadCount;
+        badge.style.display = 'inline-block';
+    }
+}
+    function scrollChatToBottom() {
+        const stream = document.getElementById('chat-messages-stream');
+        stream.scrollTop = stream.scrollHeight;
+    }
+</script>
+</body>
+</html>
+

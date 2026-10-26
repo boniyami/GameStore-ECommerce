@@ -1,0 +1,79 @@
+<%- include('partials/header') %>
+
+<style>
+    /* Enforces 4 items side-by-side on desktops while keeping it fluid on smaller displays */
+    .admin-inventory-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    /* Target viewports from medium laptops up to the largest desktop configurations */
+    @media (min-width: 992px) {
+        .admin-inventory-grid {
+            grid-template-columns: repeat(4, 1fr); /* Locks exactly 4 cards per row */
+        }
+    }
+</style>
+
+<div class="full-page-container" style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; margin-bottom: 30px;">
+        <h2 style="margin: 0; color: #ffffff;">Inventory Management</h2>
+    </div>
+
+    <div class="admin-block" style="margin-top: 0; margin-bottom: 40px; background: #00aaff0f;">
+        <h3 style="margin-top: 0; color: #ffffff; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Create New Product Catalog Entry</h3>
+        <form action="/product/create" method="POST" enctype="multipart/form-data" class="inline-form">
+            <input type="text" name="newProductName" placeholder="Item System Name" required>
+            <input type="number" name="newProductPrice" step="0.01" placeholder="Base Retail Price (BDT.)" required>
+            <input type="file" name="newProductImage" accept="image/*" required>
+            <button type="submit" class="btn-add" style="width: auto; padding: 0 25px; ">Save New Entry</button>
+        </form>
+    </div>
+
+    <h3 style="color: #ffffff; margin-bottom: 20px;">Active Catalog Infrastructure Records</h3>
+    
+    <div class="admin-inventory-grid">
+        <% products.forEach(product => { %>
+            <div style= "position: relative; min-width: 0;background: #e2e8f000;">
+                
+                <form action="/product/delete" method="POST" onsubmit="return confirm('Delete this record configuration permanently?');" style="position: absolute; top: 8px; right: 8px; z-index: 10;">
+                    <input type="hidden" name="productId" value="<%= product.id %>">
+                    <button type="submit" style="background: #e53e3e; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">✕</button>
+                </form>
+
+                <img src="<%= product.imagePath %>" alt="<%= product.name %>" style="height: 160px; width: 100%; object-fit: cover;">
+                
+                <div class="card-body" style="padding: 15px;">
+                    <strong style="font-size: 0.95rem; color: #ffffff; display: block; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<%= product.name %>"><%= product.name %></strong>
+                    <div class="price" style="margin: 0 0 15px 0; font-size: 1.1rem; color: #ffffff;">BDT. <%= product.price.toFixed(2) %></div>
+                    
+                    <details style="text-align: left; font-size: 0.85rem; border-top: 1px dashed #cbd5e0; padding-top: 10px;">
+                        <summary style="cursor: pointer; color: #ffffff; text-align: center; font-weight: bold; outline: none;">✏️ Edit Asset Configurations</summary>
+                        <form action="/product/update" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                            <input type="hidden" name="productId" value="<%= product.id %>">                            
+                            <div>
+                                <label style="font-size: 0.75rem; color: #ffffff; font-weight: bold;">Product Name:</label>
+                                <input type="text" name="updateProductName" value="<%= product.name %>" style="width: 100%; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.8rem;" required>
+                            </div>
+
+                            <div>
+                                <label style="font-size: 0.75rem; color: #ffffff; font-weight: bold;">Unit Price (BDT.):</label>
+                                <input type="number" name="updateProductPrice" step="0.01" value="<%= product.price %>" style="width: 100%; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.8rem;" required>
+                            </div>
+
+                            <div>
+                                <label style="font-size: 0.75rem; color: #ffffff; font-weight: bold;">Replace Image File:</label>
+                                <input type="file" name="updateProductImage" accept="image/*" style="font-size: 0.75rem; color: #ffffff; width: 80%;">
+                            </div>
+
+                            <button type="submit" class="btn-add" style=" font-size: 0.8rem; padding: 7px; margin-top: 4px;">Update Record</button>
+                        </form>
+                    </details>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,195 @@
+<%- include('partials/header') %>
+
+<style>   
+    .hidden-cart-state {
+        display: none !important;
+    }
+    @keyframes scaleHeart {
+        from { transform: scale(1); }
+        to { transform: scale(1.1); }
+    }
+</style>
+
+<div id="mainAppView" style="display: block;">
+    <div class="app-container">
+        <div class="catalog-container">
+            <h2>Available Games & Gear</h2>        
+            <div class="product-grid">
+                <% products.forEach(product => { %>
+                    <div class="card">
+                        <img src="<%= product.imagePath %>" alt="<%= product.name %>">
+                        <div class="card-body">
+                            <strong style="color: white; display: block;"><%= product.name %></strong>
+                            <div class="price">BDT. <%= product.price.toFixed(2) %></div>                         
+                            <form action="/cart/add" method="POST">
+                                <input type="hidden" name="productId" value="<%= product.id %>">
+                                <button type="submit" class="btn-add">Add to Cart 🛒</button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+        <div class="sidebar-cart <%= (typeof cart !== 'undefined' && cart && cart.length > 0) ? '' : 'hidden-cart-state' %>">
+            <h2>Active Order Cart</h2>        
+            <div class="cart-items">
+                <% if (typeof cart === 'undefined' || !cart || cart.length === 0) { %>
+                    <p style="color: #ffffff; text-align: center; margin-top: 50px;">Cart is currently empty.<br>Select catalog inventory items to add.</p>
+                <% } else { %>
+                    <% cart.forEach(item => { %>
+                        <div class="cart-item">
+                            <img src="<%= item.imagePath %>" alt="<%= item.name %>">
+                            <div class="cart-details">
+                                <div style="font-size: 0.9rem;color:white; font-weight: bold; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= item.name %></div>
+                                <div style="color: #ffffff; font-size: 0.85rem;"> BDT. <%= item.price.toFixed(2) %> x <%= item.quantity %></div>
+                            </div>
+                            <div class="cart-controls">
+                                <form action="/cart/remove" method="POST" style="margin: 0;">
+                                    <input type="hidden" name="productId" value="<%= item.id %>">
+                                    <button type="submit" class="btn-mini">-</button>
+                                </form>                            
+                                <span><strong><%= item.quantity %></strong></span>                            
+                                <form action="/cart/add" method="POST" style="margin: 0;">
+                                    <input type="hidden" name="productId" value="<%= item.id %>">
+                                    <button type="submit" class="btn-mini">+</button>
+                                </form>
+                                <form action="/cart/remove-all" method="POST" style="margin: 0; margin-left: 4px;">
+                                    <input type="hidden" name="productId" value="<%= item.id %>">
+                                    <button type="submit" class="btn-mini" style="background: #fed7d7; color: #c53030; font-weight: bold; border-color: #feb2b2;">&times;</button>
+                                </form>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+            <div class="checkout-box">
+                <div class="total-row">
+                    <span>Total Due:</span>
+                    <span>BDT. <%= typeof cartTotal !== 'undefined' ? cartTotal : '0.00' %></span>
+                </div>
+                <% if (typeof cart !== 'undefined' && cart && cart.length > 0) { %>
+                    <form id="checkoutForm" action="/cart/checkout" method="POST" onsubmit="openCheckoutModal(event)">
+                        <input type="hidden" name="customerName" id="hiddenCustomerName">
+                        <input type="hidden" name="customerAddress" id="hiddenCustomerAddress">
+                        <button type="submit" class="btn-checkout">Complete Checkout & Print Receipt</button>
+                    </form>
+                <% } else { %>
+                    <button class="btn-checkout" style="background: #cbd5e0; cursor: not-allowed;" disabled>Complete Checkout</button>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="checkoutModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 32, 44, 0.85); z-index: 9999; display: none; align-items: center; justify-content: center; font-family: system-ui, -apple-system, sans-serif; backdrop-filter: blur(8px);">
+    <div style="background: #2d3748; padding: 32px; border-radius: 16px; border: 1px solid #4a5568; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3); max-width: 440px; width: 90%; transform: translateY(20px); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" id="modalCard">        
+        
+        <!-- Input Step -->
+        <div id="modal-step-inputs" style="display: block;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #fbd38d; font-size: 1.25rem; font-weight: 800; text-transform: uppercase;">Checkout & Delivery</h3>
+                <button onclick="closeCheckoutModal()" style="background: transparent; border: none; color: #a0aec0; font-size: 1.5rem; cursor: pointer; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#f56565'" onmouseout="this.style.color='#a0aec0'">&times;</button>
+            </div>            
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #a0aec0; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Player Name</label>
+                <input type="text" id="modalInputName" placeholder="e.g. Leeroy Jenkins" style="width: 100%; padding: 10px 14px; background: #1a202c; color: #f7fafc; border: 1px solid #4a5568; border-radius: 8px; font-size: 0.95rem; outline: none; box-sizing: border-box; transition: border-color 0.2s;" onfocus="this.style.borderColor='#d37100'" onblur="this.style.borderColor='#4a5568'">
+            </div>            
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #a0aec0; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Delivery Email (For Digital Key)</label>
+                <input type="email" id="modalInputAddress" placeholder="e.g. player@esports.com" style="width: 100%; padding: 10px 14px; background: #1a202c; color: #f7fafc; border: 1px solid #4a5568; border-radius: 8px; font-size: 0.95rem; outline: none; box-sizing: border-box; transition: border-color 0.2s;" onfocus="this.style.borderColor='#d37100'" onblur="this.style.borderColor='#4a5568'">
+            </div>
+            
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #a0aec0; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Payment Method</label>
+                <select id="modalInputPayment" style="width: 100%; padding: 10px 14px; background: #1a202c; color: #f7fafc; border: 1px solid #4a5568; border-radius: 8px; font-size: 0.95rem; outline: none; box-sizing: border-box; cursor: pointer; transition: border-color 0.2s;" onfocus="this.style.borderColor='#d37100'" onblur="this.style.borderColor='#4a5568'">
+                    <option value="card">Credit / Debit Card</option>
+                    <option value="mobile">Mobile Banking (bKash / Nagad)</option>
+                    <option value="crypto">Crypto Wallet</option>
+                </select>
+            </div>
+
+            <button onclick="processModalSubmission()" style="background: linear-gradient(135deg, #0022ff 0%, #0195c2 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 0.95rem; width: 100%; cursor: pointer; box-shadow: 0 4px 12px rgba(211, 113, 0, 0.25); transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Verify & Secure Order</button>
+        </div>
+        
+        <!-- Success Step -->
+        <div id="modal-step-success" style="display: none; text-align: center;">
+            <div style="font-size: 3.5rem; margin-bottom: 12px; animation: scaleHeart 0.6s infinite alternate ease-in-out;">🎮</div>
+            <h3 style="margin: 0 0 6px 0; color: #f7fafc; font-size: 1.4rem; font-weight: 800; text-transform: uppercase;">Payment Confirmed!</h3>
+            <p style="color: #a0aec0; margin: 0 0 10px 0; font-size: 0.95rem;">Thank you, <strong id="resName" style="color: #fbd38d;">Player</strong>!</p>
+            <p id="resAddressBlock" style="color: #cbd5e0; margin: 0 0 24px 0; font-size: 0.85rem; background: #1a202c; padding: 10px; border-radius: 6px; border: 1px dashed #4a5568; word-break: break-word;">Keys dispatching to: <br><span id="resAddress" style="color: #63b3ed; font-weight: bold;">N/A</span></p>
+            <button onclick="dispatchFormToServer()" style="background: #38a169; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 0.95rem; width: 100%; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 161, 105, 0.25); transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Finalize & Unlock Game</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const modalWrapper = document.getElementById('checkoutModal');
+    const modalCard = document.getElementById('modalCard');
+    
+    function openCheckoutModal(event) {
+        event.preventDefault();
+        document.getElementById('modal-step-inputs').style.display = 'block';
+        document.getElementById('modal-step-success').style.display = 'none';    
+        modalWrapper.style.display = 'flex';
+        setTimeout(() => {
+            modalCard.style.transform = 'translateY(0)';
+            modalCard.style.opacity = '1';
+        }, 10);
+    }
+    
+    function closeCheckoutModal() {
+        modalCard.style.transform = 'translateY(20px)';
+        modalCard.style.opacity = '0';
+        setTimeout(() => {
+            modalWrapper.style.display = 'none';
+        }, 200);
+    }
+    
+    function processModalSubmission() {
+        let nameVal = document.getElementById('modalInputName').value.trim();
+        let addressVal = document.getElementById('modalInputAddress').value.trim();
+        if (!nameVal) nameVal = "Valued Customer";
+        if (!addressVal) addressVal = "Walk-in Counter Sale";
+        document.getElementById('hiddenCustomerName').value = nameVal;
+        document.getElementById('hiddenCustomerAddress').value = addressVal;
+        document.getElementById('resName').innerText = nameVal;
+        document.getElementById('resAddress').innerText = addressVal;
+        document.getElementById('modal-step-inputs').style.display = 'none';
+        document.getElementById('modal-step-success').style.display = 'block';
+    }
+    
+    function dispatchFormToServer() {
+    // Capture Form Data to send in background
+    const form = document.getElementById('checkoutForm');
+    const formData = new FormData(form);
+    const searchParams = new URLSearchParams();
+    
+    for (const pair of formData) {
+        searchParams.append(pair[0], pair[1]);
+    }
+    
+    // Use background Fetch instead of regular reload submit
+    fetch(form.action, {
+        method: 'POST',
+        body: searchParams,
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // 1. Close Modal
+            closeCheckoutModal();
+            
+            // 2. FORCE THE BROWSER WINDOW TO NAVIGATE TO THE SUCCESS ROUTE
+            window.location.href = "/checkout-success";
+        } else {
+            alert("Something went wrong processing order down pipeline backend.");
+        }
+    })
+    .catch(err => console.error("Error connecting with server logic:", err));
+}
+</script>
+<%- include('partials/footer') %>
